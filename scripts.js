@@ -1,0 +1,121 @@
+function Gameboard(){
+    const rows = 3;
+    const columns = 3;
+    const board = [];
+
+    for (let i = 0; i < rows; i++) {
+        board[i] = [];
+        for (let j = 0; j < columns; j++){
+            board[i].push(Cell());
+        }
+    }
+
+    const getBoard = () => board;
+
+    function markCell (player, row, column) {
+        let position = board[row][column];
+        let defaultMark = false;
+
+        if(position.getValue() == 0){
+            position.markCell(player);
+            defaultMark = true;
+            return defaultMark;
+        } else {
+            console.log("Already marked, choose a new position.");
+            defaultMark = false;
+            return defaultMark;
+        }
+    }
+
+    return { getBoard, markCell }
+}
+
+function Cell(){
+    let value = 0;
+
+    const markCell = (player) => {
+        value = player;
+    }
+
+    const getValue = () => value;
+
+    return { markCell, getValue };
+}
+
+function GameController(playerOne = "Player One", playerTwo = "Player Two"){
+    const board = Gameboard();
+    let win = false;
+
+    const players = [
+        { name: playerOne, symbol: "X" },
+        { name: playerTwo, symbol: "O" }
+    ];
+
+    let activePlayer = players[0].symbol;
+
+    const playRound = (row, column) => {
+        let marked = board.markCell(activePlayer, row, column);
+        //check for win 
+        if(checkRows() || checkColumns() || checkDiagonals()){
+            console.log(activePlayer + " wins!");
+        } else if (marked){
+            switchPlayer();
+        }
+    }
+
+    function checkRows(){
+        for(let i = 0; i < 3; i++){
+            if(board.getBoard()[i][0].getValue() == board.getBoard()[i][1].getValue() 
+                && board.getBoard()[i][1].getValue() == board.getBoard()[i][2].getValue() 
+                && (board.getBoard()[i][0].getValue() !== 0)){
+                win = true;
+            } 
+        }
+
+        return win;
+    }
+
+    function checkColumns(){
+        for(let i = 0; i < 3; i++){
+            if(board.getBoard()[0][i].getValue() == board.getBoard()[1][i].getValue() 
+                && board.getBoard()[1][i].getValue() == board.getBoard()[2][i].getValue() 
+                && (board.getBoard()[0][i].getValue() !== 0)){
+                win = true;
+            } 
+        }
+
+        return win;
+    }
+
+    function checkDiagonals(){
+        if(((board.getBoard()[0][0].getValue() == board.getBoard()[1][1].getValue() 
+            && board.getBoard()[1][1].getValue() == board.getBoard()[2][2].getValue())
+            || (board.getBoard()[2][0].getValue() == board.getBoard()[1][1].getValue() 
+            && board.getBoard()[1][1].getValue() == board.getBoard()[0][2].getValue()))
+            && board.getBoard()[1][1].getValue() !== 0){
+            win = true;
+        } 
+        
+        return win;
+    }
+
+    function switchPlayer(){
+        activePlayer == "X" ? (activePlayer = players[1].symbol) : (activePlayer = players[0].symbol);
+    }
+
+    function printBoard(){
+        board.getBoard().forEach(row => {
+            console.log(row.map(cell => cell.getValue()));
+        });
+    }
+
+    return { playRound, printBoard };
+}
+
+const game = GameController();
+game.playRound(0, 2); // X marks
+game.playRound(0, 1); // O marks
+game.playRound(1, 1); // X marks
+game.playRound(2, 2); // O marks
+game.playRound(2, 0); // X marks
+game.printBoard();
